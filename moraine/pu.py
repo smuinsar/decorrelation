@@ -213,7 +213,8 @@ def _prepare_mcf(x,y):
     return simplex, edges, simplex_edges, indptr, indices, edge_pos_a, edge_pos_b
 
 # %% ../nbs/API/pu.ipynb 14
-def _solve_mcf(psi, simplex, edges, simplex_edges, indptr, indices, edge_pos_a, edge_pos_b, capacity=int(1e9), weight=1):
+def _solve_mcf(ph, simplex, edges, simplex_edges, indptr, indices, edge_pos_a, edge_pos_b, capacity=int(1e9), weight=1):
+    psi = np.angle(ph).astype(np.float32)
     supplys = _compute_supplys(psi, simplex)
     flows = _solve_mcf_or(simplex_edges, supplys, capacity, weight)
     diff_dual = _compute_diff_dual(psi, edges, flows, edge_pos_a, edge_pos_b)
@@ -231,7 +232,6 @@ def mcf_pc(
     '''
     # pc_x = pc_x.astype(np.int32)
     # pc_y = pc_y.astype(np.int32)
-    psi = np.angle(ph).astype(np.float32)
     required_data = _prepare_mcf(pc_x, pc_y)
-    unw = _solve_mcf(psi, *required_data)
+    unw = _solve_mcf(ph, *required_data)
     return unw
