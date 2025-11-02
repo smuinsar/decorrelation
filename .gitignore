@@ -167,3 +167,5 @@ nbs/CLI/*.png
 moraine/dl_model/*.onnx
 
 base.out
+
+nbs/_deprecation/

@@ -257,7 +257,7 @@ def n2f(
 
     return out
 
-# %% ../nbs/API/dl.ipynb 33
+# %% ../nbs/API/dl.ipynb 32
 def _n2f_np_in_gpu(
     intf:np.ndarray, # interferogram, 2d np.complex64 or cp.complex64
     chunks:tuple=None, # chunksize, intf.shape by default 
@@ -280,7 +280,7 @@ def _n2f_np_in_gpu(
         out[out_slice] = _infer_n2f_gpu(cp.asarray(intf[in_slice]),session)[map_slice].get()
     return out
 
-# %% ../nbs/API/dl.ipynb 35
+# %% ../nbs/API/dl.ipynb 34
 @ngpjit
 def _pre_infer_n2fs3d_numba(adi,intf):
     nlines, width = intf.shape
@@ -304,7 +304,7 @@ def _pre_infer_n2fs3d_numba(adi,intf):
                 out[0,2,i,j] = intf_i_j.imag/amp
     return out, mask
 
-# %% ../nbs/API/dl.ipynb 36
+# %% ../nbs/API/dl.ipynb 35
 if is_cuda_available():
     _pre_infer_n2fs3d_kernel = cp.ElementwiseKernel(
             'raw float32 adi, raw T intf, int32 nlines, int32 width',
@@ -333,7 +333,7 @@ if is_cuda_available():
             # I do not find an easy way to generate random number with cupy kernel
             name = 'pre_infer_n2f_kernel',no_return=True)
 
-# %% ../nbs/API/dl.ipynb 37
+# %% ../nbs/API/dl.ipynb 36
 if is_cuda_available():
     def _pre_infer_n2fs3d_cp(adi,intf):
         nlines, width = intf.shape
@@ -346,7 +346,7 @@ if is_cuda_available():
         out[0,2,nan_pos[0],nan_pos[1]] = cp.sin(random_phase)
         return out, mask
 
-# %% ../nbs/API/dl.ipynb 45
+# %% ../nbs/API/dl.ipynb 44
 def _infer_n2fs3d_cpu(
     adi,
     intf,
@@ -356,7 +356,7 @@ def _infer_n2fs3d_cpu(
     infer_out = session.run([session.get_outputs()[0].name,],{session.get_inputs()[0].name: input_intf})[0]
     return _after_infer_n2f_numba(infer_out,mask)
 
-# %% ../nbs/API/dl.ipynb 46
+# %% ../nbs/API/dl.ipynb 45
 def _infer_n2fs3d_gpu(
     adi,
     intf,
@@ -386,7 +386,7 @@ def _infer_n2fs3d_gpu(
     session.run_with_iobinding(io_binding)
     return _after_infer_n2f_cp(out,mask)
 
-# %% ../nbs/API/dl.ipynb 47
+# %% ../nbs/API/dl.ipynb 46
 def n2fs3d(
     adi:np.ndarray, # amplitude dispersion index, 2d np.float32 or cp.float32
     intf:np.ndarray, # interferogram, 2d np.complex64 or cp.complex64
@@ -414,7 +414,7 @@ def n2fs3d(
 
     return out
 
-# %% ../nbs/API/dl.ipynb 55
+# %% ../nbs/API/dl.ipynb 54
 def _n2fs3d_np_in_gpu(
     adi:np.ndarray, # adi, 2d np.float32
     intf:np.ndarray, # interferogram, 2d np.complex64 or cp.complex64
@@ -436,7 +436,7 @@ def _n2fs3d_np_in_gpu(
         out[out_slice] = _infer_n2fs3d_gpu(cp.asarray(adi[in_slice]),cp.asarray(intf[in_slice]),session)[map_slice].get()
     return out
 
-# %% ../nbs/API/dl.ipynb 57
+# %% ../nbs/API/dl.ipynb 56
 @ngpjit
 def _weights(dd):
     N, K = dd.shape #(N, 3)
@@ -450,7 +450,7 @@ def _weights(dd):
             out[i, j] /= denom
     return out
 
-# %% ../nbs/API/dl.ipynb 58
+# %% ../nbs/API/dl.ipynb 57
 def _sample_and_knn(pos, k=16, workers=-1):  # (N, 2)
     N0 = pos.shape[0]
     N1 = N0 // 4
@@ -493,7 +493,7 @@ def _sample_and_knn(pos, k=16, workers=-1):  # (N, 2)
         ww_10, ww_21, ww_32
     )
 
-# %% ../nbs/API/dl.ipynb 59
+# %% ../nbs/API/dl.ipynb 58
 @ngpjit
 def _pos_norm(x, y): # (N,), (N,)
     '''return normalized pos, (N, 2)'''
@@ -504,7 +504,7 @@ def _pos_norm(x, y): # (N,), (N,)
 
     return np.stack((x_norm, y_norm),axis=-1).astype(np.float32)
 
-# %% ../nbs/API/dl.ipynb 60
+# %% ../nbs/API/dl.ipynb 59
 @ngpjit
 def _complex2channel(intf):
     # convert 1d complex array to 2 column
@@ -516,7 +516,7 @@ def _complex2channel(intf):
         out[i,1] = intf[i].imag/amp_i
     return out
 
-# %% ../nbs/API/dl.ipynb 61
+# %% ../nbs/API/dl.ipynb 60
 @ngpjit
 def _2channel2complex(intf):
     # convert (n,2) to (n,) complex array
@@ -526,7 +526,7 @@ def _2channel2complex(intf):
         out[i] = intf[i,0]+intf[i,1]*1j
     return out
 
-# %% ../nbs/API/dl.ipynb 62
+# %% ../nbs/API/dl.ipynb 61
 def _infer_n2ft(
     x,
     y,
@@ -548,7 +548,7 @@ def _infer_n2ft(
     filt_intf = _2channel2complex(infer_out)
     return filt_intf
 
-# %% ../nbs/API/dl.ipynb 63
+# %% ../nbs/API/dl.ipynb 62
 def n2ft(
     x:np.ndarray, # x coordinate, e.g., longitude, shape (n,) np.floating
     y:np.ndarray, # y coordinate, e.g., latitude, shape (n,) np.floating
